@@ -2,6 +2,7 @@ package com.springboot.blog.controller;
 
 import com.springboot.blog.entity.Post;
 import com.springboot.blog.payload.PostDto;
+import com.springboot.blog.payload.PostResponse;
 import com.springboot.blog.service.PostService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,9 +24,13 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostDto>> getAllPost(){
-        List<PostDto> postDtoList = postService.getAllPost();
-        return new ResponseEntity<>(postDtoList, HttpStatus.OK);
+    @ResponseStatus(value = HttpStatus.OK)
+    public PostResponse getAllPost(
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) int pageSize
+    ){
+
+        return postService.getAllPost(pageNo, pageSize);
     }
 
     @GetMapping("{id}")
