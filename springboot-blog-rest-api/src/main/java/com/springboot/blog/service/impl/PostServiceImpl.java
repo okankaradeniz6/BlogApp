@@ -1,9 +1,12 @@
 package com.springboot.blog.service.impl;
 
+import com.springboot.blog.entity.Comment;
 import com.springboot.blog.entity.Post;
 import com.springboot.blog.exception.ResourceNotFoundException;
+import com.springboot.blog.payload.CommentDto;
 import com.springboot.blog.payload.PostDto;
 import com.springboot.blog.payload.PostResponse;
+import com.springboot.blog.repository.CommentRepository;
 import com.springboot.blog.repository.PostRepository;
 import com.springboot.blog.service.PostService;
 import lombok.AllArgsConstructor;
@@ -14,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +27,7 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
     PostRepository postRepository;
     ModelMapper modelMapper;
+    CommentRepository commentRepository;
     @Override
     public PostDto createPost(PostDto postDto) {
         Post post = modelMapper.map(postDto, Post.class);
@@ -63,7 +69,13 @@ public class PostServiceImpl implements PostService {
         Post postById = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Post", "Id", id)
         );
-        return modelMapper.map(postById, PostDto.class);
+        List<Comment> comments = commentRepository.findByPostId(id);
+        Set<CommentDto> commentDtoSet = comments.stream().map(
+                comment -> modelMapper.map(comment, CommentDto.class)
+        ).collect(Collectors.toSet());
+        PostDto postDtoById = modelMapper.map(postById, PostDto.class);
+        postDtoById.setComments(commentDtoSet);
+        return postDtoById;
     }
 
     @Override
